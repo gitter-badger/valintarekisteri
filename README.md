@@ -1,0 +1,2 @@
+# valintarekisteri
+Opiskelijavalintarekisteri
