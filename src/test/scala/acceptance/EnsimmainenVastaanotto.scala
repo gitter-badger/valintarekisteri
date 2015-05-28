@@ -15,28 +15,36 @@ import scodec.bits.ByteVector
 
 class EnsimmainenVastaanotto extends AcceptanceSpec {
 
+  feature("The user can accept a place of study") {
+    info("As an applicant")
+    info("I want to be able to accept a place of study")
+    info("So that I can start studying")
 
-  info("As an applicant i want to be able to accept a place of study")
-
-
-  Given ("An applicant has not accepted a place of study earlier")
-  implicit val server: ServerData = ValintarekisteriServer.server(Options(freePort)).run
-  implicit val client: Client = org.http4s.client.blaze.defaultClient
-
-
-  When ("The Applicant accepts a place of study")
-
-  val vastaanotto: Json = jObjectFields("henkilo" -> jString("henkilo-oid"),
-                                  "hakukohde" -> jString("hakukohde-oid"))
-
-  val acceptanceSave= postJson("/vastaanotto")(vastaanotto)
+    scenario("Accepting with no prior acceptance") {
+      Given ("An applicant has not accepted a place of study earlier")
+      implicit val server: ServerData = ValintarekisteriServer.server(Options(freePort)).run
+      implicit val client: Client = org.http4s.client.blaze.defaultClient
 
 
+      When ("The Applicant accepts a place of study")
 
-  Then ("He gets a succesfull result")
-  acceptanceSave.run.status should be (Status.Ok)
+      val vastaanotto: Json = jObjectFields("henkilo" -> jString("henkilo-oid"),
+        "hakukohde" -> jString("hakukohde-oid"))
 
-  server.server.shutdown.run
+      val acceptanceSave= postJson("/vastaanotto")(vastaanotto)
+
+
+
+      Then ("He gets a succesfull result")
+      acceptanceSave.run.status should be (Status.Ok)
+
+      server.server.shutdown.run
+
+    }
+
+
+  }
+
 
 
   def freePort:Int =  {
@@ -70,15 +78,15 @@ class EnsimmainenVastaanotto extends AcceptanceSpec {
 
   }
 
-  def get(relationalUri: String)(implicit server:ServerData) = {
+  def get(relationalUri: String)(implicit server:ServerData, client: Client) = {
     request(Method.GET, relationalUri)
   }
 
-  def post(relationalUri:String)(body: EntityBody = EmptyBody)(implicit server:ServerData) = {
+  def post(relationalUri:String)(body: EntityBody = EmptyBody)(implicit server:ServerData, client: Client) = {
     request(Method.POST, relationalUri, body)
   }
 
-  def postJson(relationalUri:String)(json: Json)(implicit server:ServerData) = {
+  def postJson(relationalUri:String)(json: Json)(implicit server:ServerData, client: Client) = {
 
     val body = Process(ByteVector(json.toString.getBytes)).toSource
 
