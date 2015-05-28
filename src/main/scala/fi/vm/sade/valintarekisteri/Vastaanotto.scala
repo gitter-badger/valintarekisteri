@@ -5,10 +5,6 @@ import org.http4s.dsl._
 import org.http4s.argonaut.ArgonautInstances
 import argonaut.DecodeJson
 import scala.compat.Platform
-import scalaz.stream.Process
-import scodec.bits.ByteVector
-import scalaz.stream.Process.Halt
-import scalaz.stream.Cause.Error
 
 
 object Vastaanotto extends ArgonautInstances {
