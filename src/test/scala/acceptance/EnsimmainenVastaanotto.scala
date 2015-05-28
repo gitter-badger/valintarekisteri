@@ -33,10 +33,10 @@ class EnsimmainenVastaanotto extends AcceptanceSpec {
 
 
 
-  Then ("He get's a succesfull result")
+  Then ("He gets a succesfull result")
   acceptanceSave.run.status should be (Status.Ok)
 
-  server.server.shutdownNow()
+  server.server.shutdown.run
 
 
   def freePort:Int =  {
