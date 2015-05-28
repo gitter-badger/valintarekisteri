@@ -3,13 +3,12 @@ package fi.vm.sade.valintarekisteri
 import org.http4s.server.HttpService
 import org.http4s.dsl._
 import org.http4s.argonaut.ArgonautInstances
-import argonaut.{Parse, DecodeJson}
+import argonaut.DecodeJson
 import scala.compat.Platform
 import scalaz.stream.Process
 import scodec.bits.ByteVector
 import scalaz.stream.Process.Halt
 import scalaz.stream.Cause.Error
-import org.http4s.UrlForm
 
 
 object Vastaanotto extends ArgonautInstances {
@@ -30,13 +29,6 @@ object Vastaanotto extends ArgonautInstances {
 
   }
 
-  val decodeUtf8 = Process.receive1[ByteVector, String] {
-    (bv: ByteVector) => bv.decodeUtf8 match {
-      case Left(e) => Halt(Error(e))
-      case Right(bs) => Process.emit(bs)
-    }
-
-  }
 
 }
 
