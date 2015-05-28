@@ -3,16 +3,13 @@ package fi.vm.sade.valintarekisteri
 import org.http4s.server.HttpService
 import org.http4s.dsl._
 import org.http4s.argonaut.ArgonautInstances
-import argonaut.DecodeJson
+import argonaut._, Argonaut._
 import scala.compat.Platform
 
 
 object Vastaanotto extends ArgonautInstances {
 
-  implicit val vastaanottoTietoDecoder = DecodeJson(c => for {
-    name <- (c --\ "henkilo").as[String]
-    age <- (c --\ "hakukohde").as[String]
-  } yield VastaanottoTieto(name, age))
+  implicit val vastaanottoTietoDecoder = jdecode2L(VastaanottoTieto.apply)("henkilo", "hakukohde")
 
   implicit val decoder = jsonOf[VastaanottoTieto]
 
@@ -29,4 +26,12 @@ object Vastaanotto extends ArgonautInstances {
 }
 
 
-case class VastaanottoTieto(henkiloOid: String, hakukohdeOid: String, timestamp: Long = Platform.currentTime)
+case class VastaanottoTieto(henkiloOid: String, hakukohdeOid: String, timestamp: Long)
+
+
+object VastaanottoTieto {
+
+  def apply(henkiloOid: String, hakukohdeOid: String): VastaanottoTieto = VastaanottoTieto(henkiloOid, hakukohdeOid, Platform.currentTime)
+
+
+}
