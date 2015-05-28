@@ -10,4 +10,9 @@ Opiskelijavalintarekisteri
 
 ## Tärkeää
 
-testit toimivat toistaiseksi vain java 7:lla. Java 8:lla serveri valittaa suljettaessa.
+Testit toimivat toistaiseksi vain java 7:lla. Java 8:lla serveri valittaa suljettaessa.
+
+tarvittaessa java homen voi antaa sbt:lle parametrilla
+```bash
+./sbt -java-home <pathi jdk 1.7:n>
+```
