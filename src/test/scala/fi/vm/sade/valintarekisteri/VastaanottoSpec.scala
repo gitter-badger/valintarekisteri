@@ -43,7 +43,7 @@ class VastaanottoSpec extends UnitSpec with ArgonautInstances with ResponseSuppo
 
     val storedResults:mutable.Buffer[VastaanottoTieto] =  ListBuffer()
     val dataStore =  new DataStore {
-      override val henkiloQuery: Channel[Task, String, Seq[VastaanottoTieto]] = Process().toSource
+      override val henkiloQuery: Channel[Task, String, Process[Task,VastaanottoTieto]] = Process().toSource
       override val newItems: Sink[Task, VastaanottoTieto] =       sink.lift((vt:VastaanottoTieto) => Task{saveToBuffer(storedResults)(vt)})
 
     }
@@ -61,13 +61,13 @@ class VastaanottoSpec extends UnitSpec with ArgonautInstances with ResponseSuppo
 
     val dataStore =  new DataStore {
 
-      override val henkiloQuery: Channel[Task, String, Seq[VastaanottoTieto]] = channel.lift{
+      override val henkiloQuery: Channel[Task, String, Process[Task,VastaanottoTieto]] = channel.lift{
         (henkiloOid:String) =>
           henkiloOid match {
             case "henkilo-oid" =>
-              Task{Seq(tieto1,tieto2)}
+              Task{Process.emitAll(Seq(tieto1,tieto2)).toSource}
             case default =>
-              Task{Seq()}
+              Task{Process[VastaanottoTieto]().toSource}
           }
       }
       override val newItems: Sink[Task, VastaanottoTieto] =       sink.lift((vt:VastaanottoTieto) => Task[Unit]{})

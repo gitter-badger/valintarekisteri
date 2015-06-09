@@ -7,7 +7,7 @@ trait DataStore {
 
   val newItems: Sink[Task, VastaanottoTieto]
 
-  val henkiloQuery: Channel[Task, String, Seq[VastaanottoTieto]]
+  val henkiloQuery: Channel[Task, String, Process[Task, VastaanottoTieto]]
 
 }
 

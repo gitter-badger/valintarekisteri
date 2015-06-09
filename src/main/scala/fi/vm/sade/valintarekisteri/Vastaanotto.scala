@@ -79,7 +79,7 @@ class Vastaanotto(val dataStore:DataStore) extends ArgonautInstances {
     case req@ GET -> Root / "vastaanotto" :? HenkiloOid(henkilo) =>
 
       val query = (Process(Seq(henkilo)).flatMap(Process.emitAll).toSource through dataStore.henkiloQuery).flatMap(
-        (tiedot) => Process.emitAll(tiedot).toSource
+        (tiedot) => tiedot
       )
 
       Ok(query).withHeaders(`Transfer-Encoding`(TransferCoding.chunked))

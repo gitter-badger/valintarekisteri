@@ -28,13 +28,13 @@ class VastaanottoJDBCDataStore(val db: Database) extends DataStore {
   dbTask(setup).attemptRun
 
 
-  override val henkiloQuery: Channel[Task, String, Seq[VastaanottoTieto]] =  dbRunChannel.contramap(
+  override val henkiloQuery: Channel[Task, String, Process[Task, VastaanottoTieto]] =  dbRunChannel.contramap(
     (henkilo: String) => vastaanottos.filter(_.henkilo === henkilo).result
-  ).mapOut(
-    _.map{
+  ).mapOut((tiedot) =>
+    Process.emitAll(tiedot.map{
       case (henkilo, kohde, timestamp) => VastaanottoTieto(henkilo, kohde, timestamp)
 
-    })
+    }).toSource)
 
 
 
