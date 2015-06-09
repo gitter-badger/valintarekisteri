@@ -9,7 +9,7 @@ import scalaz.{-\/, \/-}
 import slick.jdbc.meta.MTable
 import scala.reflect.ClassTag
 
-class VastaanottoJDBCDataStore(val db: Database) extends DataStore {
+class VastaanottoJDBCDataStore(val db: Database) extends DataStore[VastaanottoTieto, String] {
 
   val vastaanottos = TableQuery[Vastaanottos]
 

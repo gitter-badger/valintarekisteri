@@ -19,7 +19,7 @@ import scodec.bits.ByteVector
 import java.nio.charset.StandardCharsets
 
 
-class Vastaanotto(val dataStore:DataStore) extends ArgonautInstances {
+class Vastaanotto(val dataStore:DataStore[VastaanottoTieto, String]) extends ArgonautInstances {
 
   implicit val kohdeCodec:CodecJson[VastaanotonKohde] = CodecJson(
     vt => jString(vt.id),

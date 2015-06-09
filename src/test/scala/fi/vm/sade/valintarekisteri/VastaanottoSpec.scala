@@ -42,7 +42,7 @@ class VastaanottoSpec extends UnitSpec with ArgonautInstances with ResponseSuppo
   it should "save the given result" in {
 
     val storedResults:mutable.Buffer[VastaanottoTieto] =  ListBuffer()
-    val dataStore =  new DataStore {
+    val dataStore =  new DataStore[VastaanottoTieto, String] {
       override val henkiloQuery: Channel[Task, String, Process[Task,VastaanottoTieto]] = Process().toSource
       override val newItems: Sink[Task, VastaanottoTieto] =       sink.lift((vt:VastaanottoTieto) => Task{saveToBuffer(storedResults)(vt)})
 
@@ -59,7 +59,7 @@ class VastaanottoSpec extends UnitSpec with ArgonautInstances with ResponseSuppo
     val tieto1 = VastaanottoTieto("henkilo-oid", "hakukohde-oid")
     val tieto2 = VastaanottoTieto("henkilo-oid", "hakukohde-oid2")
 
-    val dataStore =  new DataStore {
+    val dataStore =  new DataStore[VastaanottoTieto, String] {
 
       override val henkiloQuery: Channel[Task, String, Process[Task,VastaanottoTieto]] = channel.lift{
         (henkiloOid:String) =>
