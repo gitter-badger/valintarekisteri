@@ -2,7 +2,6 @@ package fi.vm.sade.valintarekisteri
 
 import scalaz.stream._
 import scalaz.stream.async.mutable.Signal
-import scala.annotation.tailrec
 
 
 object TestDb {
@@ -10,20 +9,11 @@ object TestDb {
 
   val s:Signal[List[String]] = async.signalOf(List[String]())
 
-  @tailrec def findNewName(names:List[String], index:Int = 1):String = {
-    val newName = s"test$index"
-    if (names.contains(newName)) findNewName(names, index + 1)
-    else newName
-  }
+  val supply = Process.supply(1).map((i) => s"test$i")
 
-  def getNew = s.compareAndSet{
-    case None => Some(List("test"))
-    case Some(names) => Some(findNewName(names) +: names)
+  def findNewName:String = supply.take(1).runLast.run.get
 
-  }.run.get.head
-
-
-  def freeJdbcUrl = s"jdbc:h2:mem:$getNew;DB_CLOSE_DELAY=-1"
+  def freeJdbcUrl = s"jdbc:h2:mem:$findNewName;DB_CLOSE_DELAY=-1"
 
 
 
