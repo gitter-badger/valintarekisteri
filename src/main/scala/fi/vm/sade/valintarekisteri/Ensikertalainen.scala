@@ -1,6 +1,5 @@
-package fi.vm.sade
+package fi.vm.sade.valintarekisteri
 
-import org.http4s._
 import org.http4s.server._
 import org.http4s.dsl._
 

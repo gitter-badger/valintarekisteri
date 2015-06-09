@@ -1,21 +1,32 @@
-package fi.vm.sade
+package fi.vm.sade.valintarekisteri
 
 import org.http4s.server.blaze.BlazeBuilder
 import org.http4s.server.Server
 import scalaz.concurrent.Task
 import scala.util.Try
-import fi.vm.sade.valintarekisteri.Vastaanotto
 
-object ValintarekisteriServer extends App {
+object Main extends App {
 
-  override def main(args:Array[String]) = {
-    server(Options(args)).run.server.awaitShutdown()
+  val cliOptions = args match {
+    case Array(port, jdbcUrl) if Try(port.toInt).isSuccess => Options(port = port.toInt, jdbcUrl = jdbcUrl)
+    case Array(port) if Try(port.toInt).isSuccess =>  Options(port = port.toInt)
+    case default => Options()
+
   }
 
-  def server(options: Options):Task[ServerData] = {
+  ValintarekisteriServer.server(cliOptions).run.server.awaitShutdown()
+
+
+
+}
+
+
+object ValintarekisteriServer {
+
+  def server(options: Options, priorAcceptances: List[VastaanottoTieto] = Nil):Task[ServerData] = {
     BlazeBuilder.bindHttp(options.port)
       .mountService(Ensikertalainen.service, "/")
-      .mountService(Vastaanotto.service)
+      .mountService(Vastaanotto(options.jdbcUrl).service)
       .start.map(ServerData(options.port, _))
   }
 
@@ -24,14 +35,7 @@ object ValintarekisteriServer extends App {
 
 }
 
-case class Options(port: Int)
+case class Options(port: Int = 8080, jdbcUrl: String = "jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1")
 
-object Options{
-  def apply(args: Array[String]): Options = args match {
-    case Array(port) if Try(port.toInt).isSuccess =>  Options(port.toInt)
-    case default => Options(8080)
-
-  }
-}
 
 case class ServerData(port:Int, server: Server)
