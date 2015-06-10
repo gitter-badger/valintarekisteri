@@ -78,18 +78,15 @@ class VastaanottoJDBCDataStore(val db: Database) extends DataStore[VastaanottoTi
 
         val orderAgain:Task[Unit] = Task.delay[Unit]{
           sub.request(1)
-          println("ordered more")
 
         }
         queue.enqueueOne(t).onFinish((result) => orderAgain).run
-        println("published")
 
       }
 
       override def onComplete(): Unit = {
         sub.cancel()
         endSignal.set(true).run
-        println("finished")
 
       }
 
@@ -108,7 +105,7 @@ class VastaanottoJDBCDataStore(val db: Database) extends DataStore[VastaanottoTi
     Task{
       val publish: DatabasePublisher[R] = db.stream(action)
       publish.subscribe(subscriber)
-      endSignal.discrete.takeWhile(!_).run.onFinish((result) => queue.close).runAsync(println)
+      endSignal.discrete.takeWhile(!_).run.onFinish((result) => queue.close).runAsync((result) => {})
       queue.dequeue
     }
 
