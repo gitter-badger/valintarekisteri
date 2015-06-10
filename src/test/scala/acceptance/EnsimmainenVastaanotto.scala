@@ -63,7 +63,6 @@ class EnsimmainenVastaanotto extends AcceptanceSpec with ResponseSupport {
 
       val vastaanottos = TableQuery[Vastaanottos]
 
-      println(Await.result(Database.forURL(dburl).run(vastaanottos.result), Duration.Inf))
 
       When ("The Applicant checks for acceptances for a place of study")
 

@@ -56,7 +56,7 @@ class VastaanottoDatastoreSpec extends UnitSpec {
           vastaanottos += (vastaanotto2.henkiloOid, vastaanotto2.hakukohdeOid, vastaanotto2.timestamp))), Duration.Inf)
 
 
-    val map = (Process("henkilo1").toSource through dataStore.henkiloQuery).flatMap((queryProcess) => queryProcess)
+    val map = (Process("henkilo1").toSource through dataStore.henkiloQuery).flatMap(identity)
     map.runLast.run.get should be (vastaanotto1)
 
 

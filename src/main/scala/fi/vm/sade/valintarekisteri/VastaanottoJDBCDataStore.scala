@@ -1,5 +1,8 @@
 package fi.vm.sade.valintarekisteri
 
+import slick.dbio.Effect.Read
+import slick.profile.{FixedSqlAction, FixedSqlStreamingAction}
+
 import scalaz.concurrent.Task
 import scalaz.stream._
 
@@ -8,6 +11,12 @@ import scala.concurrent.Future
 import scalaz.{-\/, \/-}
 import slick.jdbc.meta.MTable
 import scala.reflect.ClassTag
+import slick.backend.DatabasePublisher
+import org.reactivestreams.{Subscription, Subscriber}
+import scalaz.stream.async.mutable.{Topic, Signal}
+import scalaz.-\/
+import scala.Some
+import scalaz.\/-
 
 class VastaanottoJDBCDataStore(val db: Database) extends DataStore[VastaanottoTieto, String] {
 
@@ -28,15 +37,84 @@ class VastaanottoJDBCDataStore(val db: Database) extends DataStore[VastaanottoTi
   dbTask(setup).attemptRun
 
 
-  override val henkiloQuery: Channel[Task, String, Process[Task, VastaanottoTieto]] =  dbRunChannel.contramap(
+
+  override val henkiloQuery: Channel[Task, String, Process[Task, VastaanottoTieto]] =  dbStreamChannel[(String, VastaanotonKohde, Long)].contramap[String](
     (henkilo: String) => vastaanottos.filter(_.henkilo === henkilo).result
-  ).mapOut((tiedot) =>
-    Process.emitAll(tiedot.map{
+  ).mapOut(
+    _.map{
       case (henkilo, kohde, timestamp) => VastaanottoTieto(henkilo, kohde, timestamp)
+    }
+   )
 
-    }).toSource)
+
+  def dbStreamTask[R: ClassTag](action: slick.dbio.DBIOAction[Seq[R], Streaming[R], Nothing]):Task[Process[Task,R]]  = {
 
 
+    val queue = async.boundedQueue[R](1)
+
+
+
+    trait RequestableSubscriber[T] extends Subscriber[T] {
+      var sub: Subscription
+
+      var batchSize: Long
+
+      def requestBatch = sub.request(batchSize)
+
+
+    }
+
+    val endSignal = async.signalOf(false)
+
+
+    val subscriber:RequestableSubscriber[R] = new RequestableSubscriber[R] {
+
+      var sub:Subscription = _
+
+      var batchSize = 1L
+
+
+      override def onNext(t: R): Unit = {
+
+        val orderAgain:Task[Unit] = Task.delay[Unit]{
+          sub.request(1)
+          println("ordered more")
+
+        }
+        queue.enqueueOne(t).onFinish((result) => orderAgain).run
+        println("published")
+
+      }
+
+      override def onComplete(): Unit = {
+        sub.cancel()
+        endSignal.set(true).run
+        println("finished")
+
+      }
+
+      override def onSubscribe(s: Subscription): Unit = {
+        sub = s
+        sub.request(1)
+
+      }
+
+      override def onError(t: Throwable): Unit = queue.fail(t)
+    }
+
+
+
+
+    Task{
+      val publish: DatabasePublisher[R] = db.stream(action)
+      publish.subscribe(subscriber)
+      endSignal.discrete.takeWhile(!_).run.onFinish((result) => queue.close).runAsync(println)
+      queue.dequeue
+    }
+
+  }
+
+  def dbStreamChannel[R : ClassTag]: Channel[Task, slick.dbio.DBIOAction[Seq[R], Streaming[R], Nothing], Process[Task,R]] = channel.lift(dbStreamTask)
 
   def dbRunChannel[R : ClassTag]: Channel[Task, slick.dbio.DBIOAction[R, NoStream, Nothing], R] = channel.lift(dbTask[R])
 
