@@ -1,5 +1,7 @@
 # valintarekisteri
 
+[![Join the chat at https://gitter.im/Opetushallitus/valintarekisteri](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Opetushallitus/valintarekisteri?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Opiskelijavalintarekisteri
 
 
